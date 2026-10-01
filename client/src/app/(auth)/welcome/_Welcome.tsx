@@ -1,0 +1,12 @@
+//src/app/(auth)/welcome/_Welcome.tsx
+import { View, Text } from "react-native";
+
+const Welcome = () => {
+  return (
+    <View>
+      <Text>Welcome</Text>
+    </View>
+  );
+};
+
+export default Welcome;
