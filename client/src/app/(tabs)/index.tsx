@@ -8,64 +8,11 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { mockWallet } from "../../lib/mock/data";
 
-const MC_ORANGE = "#FF5F00";
-const MC_YELLOW = "#F79E1B";
-const DARK_CHARCOAL = "#1A1A1C";
+type TabType = "spend" | "save" | "grow";
 
 export default function Home() {
-  // Initialize state from our mock data
-  const [usePct, setUsePct] = useState(mockWallet.rules.use);
-  const [savePct, setSavePct] = useState(mockWallet.rules.save);
-  const [investPct, setInvestPct] = useState(mockWallet.rules.invest);
-
-  // Calculate actual RWF balances
-  const useBalance = (mockWallet.totalReceived * usePct) / 100;
-  const saveBalance = (mockWallet.totalReceived * savePct) / 100;
-  const investBalance = (mockWallet.totalReceived * investPct) / 100;
-
-  // Handlers: Save and Invest changes always pull from the "Use" bucket
-  const increaseSave = () => {
-    if (usePct >= 5) {
-      setSavePct(savePct + 5);
-      setUsePct(usePct - 5);
-    }
-  };
-  const decreaseSave = () => {
-    if (savePct >= 5) {
-      setSavePct(savePct - 5);
-      setUsePct(usePct + 5);
-    }
-  };
-
-  const increaseInvest = () => {
-    if (usePct >= 5) {
-      setInvestPct(investPct + 5);
-      setUsePct(usePct - 5);
-    }
-  };
-  const decreaseInvest = () => {
-    if (investPct >= 5) {
-      setInvestPct(investPct - 5);
-      setUsePct(usePct + 5);
-    }
-  };
-
-  // Increasing Use pulls from Save (as long as Save has at least 5%)
-  const increaseUse = () => {
-    if (savePct >= 5) {
-      setUsePct(usePct + 5);
-      setSavePct(savePct - 5);
-    }
-  };
-  const decreaseUse = () => {
-    if (usePct >= 5) {
-      setUsePct(usePct - 5);
-      setSavePct(savePct + 5);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<TabType>("spend");
 
   return (
     <ScrollView
@@ -73,111 +20,252 @@ export default function Home() {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
-      {/* GREETING (Glassmorphism) */}
-      <View style={styles.greetingGlass}>
-        <Text style={styles.greetingText}>Hello, Alex 👋</Text>
-        <Text style={styles.subGreeting}>Here's your stipend breakdown.</Text>
+      {/* 1. HERO SECTION: Total Deposited */}
+      <View style={styles.heroSection}>
+        <Text style={styles.heroLabel}>TOTAL DEPOSITED</Text>
+        <View style={styles.amountRow}>
+          <Text style={styles.currency}>RWF</Text>
+          <Text style={styles.hugeAmount}>1,200,000</Text>
+        </View>
+        <Text style={styles.heroSubtext}>
+          Split across Spend, Save, and Grow
+        </Text>
+
+        {/* Segmented Progress Bar */}
+        <View style={styles.segmentedBar}>
+          <View
+            style={[styles.segment, { flex: 5, backgroundColor: "#DC2626" }]}
+          />
+          <View
+            style={[styles.segment, { flex: 4, backgroundColor: "#F59E0B" }]}
+          />
+          <View
+            style={[styles.segment, { flex: 1, backgroundColor: "#111827" }]}
+          />
+        </View>
       </View>
 
-      {/* BANNER: UNALLOCATED TOTAL */}
-      <LinearGradient colors={["#FF5F00", "#F79E1B"]} style={styles.mainBanner}>
-        <Text style={styles.bannerLabel}>Unallocated Total</Text>
-        <Text style={styles.bannerAmount}>
-          {mockWallet.totalReceived.toLocaleString()} RWF
-        </Text>
-      </LinearGradient>
+      {/* 2. TAB SWITCHER */}
+      <View style={styles.tabContainer}>
+        {/* Spend Tab */}
+        <View style={styles.tabWrapper}>
+          <TouchableOpacity
+            style={[
+              styles.tabBtn,
+              activeTab === "spend" ? styles.activeTabRed : styles.inactiveTab,
+            ]}
+            onPress={() => setActiveTab("spend")}
+          >
+            <Text
+              style={[
+                styles.tabTitle,
+                activeTab === "spend" ? styles.activeText : styles.inactiveText,
+              ]}
+            >
+              Spend
+            </Text>
+            <Text
+              style={[
+                styles.tabSub,
+                activeTab === "spend"
+                  ? styles.activeTextSub
+                  : styles.inactiveTextSub,
+              ]}
+            >
+              600K
+            </Text>
+          </TouchableOpacity>
+          {activeTab === "spend" && <View style={styles.activeDot} />}
+        </View>
 
-      {/* ACTION BUTTON */}
-      <TouchableOpacity style={styles.masterButton} activeOpacity={0.8}>
-        <Text style={styles.masterButtonText}>+ Simulate MoMo Deposit</Text>
-      </TouchableOpacity>
+        {/* Save Tab */}
+        <View style={styles.tabWrapper}>
+          <TouchableOpacity
+            style={[
+              styles.tabBtn,
+              activeTab === "save" ? styles.activeTabRed : styles.inactiveTab,
+            ]}
+            onPress={() => setActiveTab("save")}
+          >
+            <Text
+              style={[
+                styles.tabTitle,
+                activeTab === "save" ? styles.activeText : styles.inactiveText,
+              ]}
+            >
+              Save
+            </Text>
+            <Text
+              style={[
+                styles.tabSub,
+                activeTab === "save"
+                  ? styles.activeTextSub
+                  : styles.inactiveTextSub,
+              ]}
+            >
+              480K
+            </Text>
+          </TouchableOpacity>
+          {activeTab === "save" && <View style={styles.activeDot} />}
+        </View>
 
-      {/* 1. USE CONTAINER */}
-      <View style={styles.glassCard}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Money to Use</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{usePct}%</Text>
+        {/* Grow Tab */}
+        <View style={styles.tabWrapper}>
+          <TouchableOpacity
+            style={[
+              styles.tabBtn,
+              activeTab === "grow" ? styles.activeTabRed : styles.inactiveTab,
+            ]}
+            onPress={() => setActiveTab("grow")}
+          >
+            <Text
+              style={[
+                styles.tabTitle,
+                activeTab === "grow" ? styles.activeText : styles.inactiveText,
+              ]}
+            >
+              Grow
+            </Text>
+            <Text
+              style={[
+                styles.tabSub,
+                activeTab === "grow"
+                  ? styles.activeTextSub
+                  : styles.inactiveTextSub,
+              ]}
+            >
+              120K
+            </Text>
+          </TouchableOpacity>
+          {activeTab === "grow" && <View style={styles.activeDot} />}
+        </View>
+      </View>
+
+      {/* 3. DYNAMIC CONTENT SECTION */}
+
+      {/* --- SPEND CONTENT --- */}
+      {activeTab === "spend" && (
+        <View>
+          <View style={styles.mainCard}>
+            <Text style={styles.cardLabel}>THIS WEEK'S ALLOWANCE</Text>
+            <View style={styles.amountRow}>
+              <Text style={styles.cardCurrency}>RWF</Text>
+              <Text style={styles.cardAmount}>50,000</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: "47%" }]} />
+            </View>
+            <Text style={styles.cardFooterText}>RWF 23,500 left this week</Text>
+          </View>
+
+          <View style={styles.listCard}>
+            <View>
+              <Text style={styles.listTitle}>Week 5 of 12</Text>
+              <Text style={styles.listSub}>Used so far this week</Text>
+            </View>
+            <View style={styles.amountRowSmall}>
+              <Text style={styles.listCurrency}>RWF</Text>
+              <Text style={styles.listAmount}>26,500</Text>
+            </View>
+          </View>
+
+          <View style={styles.listCard}>
+            <View>
+              <Text style={styles.listTitle}>Weekly Budget</Text>
+              <Text style={styles.listSub}>
+                Released every Monday at 9:00 AM
+              </Text>
+            </View>
+            <View style={styles.amountRowSmall}>
+              <Text style={styles.listCurrency}>RWF</Text>
+              <Text style={styles.listAmount}>50,000</Text>
+            </View>
           </View>
         </View>
+      )}
 
-        <Text style={styles.balanceText}>
-          {useBalance.toLocaleString()} RWF
-        </Text>
+      {/* --- SAVE CONTENT --- */}
+      {activeTab === "save" && (
+        <View>
+          <View style={styles.mainCard}>
+            <Text style={styles.cardLabel}>TOTAL SAVED</Text>
+            <View style={styles.amountRow}>
+              <Text style={styles.cardCurrency}>RWF</Text>
+              <Text style={styles.cardAmount}>480,000</Text>
+            </View>
+            <Text style={styles.cardFooterText}>Growing at 7% per year</Text>
+          </View>
 
-        <View style={styles.controlsRow}>
-          <TouchableOpacity
-            style={[styles.controlBtn, styles.bgYellow]}
-            onPress={decreaseUse}
-          >
-            <Text style={styles.controlTextBlack}>-</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlBtn, styles.bgYellow]}
-            onPress={increaseUse}
-          >
-            <Text style={styles.controlTextBlack}>+</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          <View style={styles.listCard}>
+            <View style={styles.listContentLeft}>
+              <Text style={styles.listTitle}>Goal Lock</Text>
+              <Text style={styles.listSub}>Locked until target is reached</Text>
+              <View style={styles.badgeRed}>
+                <Text style={styles.badgeRedText}>LOCKED</Text>
+              </View>
+            </View>
+            <View style={styles.amountRowSmall}>
+              <Text style={styles.listCurrency}>RWF</Text>
+              <Text style={styles.listAmount}>360,000</Text>
+            </View>
+          </View>
 
-      {/* 2. SAVE CONTAINER */}
-      <View style={styles.glassCard}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Saved (Locked)</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{savePct}%</Text>
+          <View style={styles.listCard}>
+            <View style={styles.listContentLeft}>
+              <Text style={styles.listTitle}>Emergency Save</Text>
+              <Text style={styles.listSub}>
+                Available for genuine emergencies
+              </Text>
+              <View style={styles.badgeOrange}>
+                <Text style={styles.badgeOrangeText}>FLEXIBLE</Text>
+              </View>
+            </View>
+            <View style={styles.amountRowSmall}>
+              <Text style={styles.listCurrency}>RWF</Text>
+              <Text style={styles.listAmount}>120,000</Text>
+            </View>
           </View>
         </View>
+      )}
 
-        <Text style={styles.balanceText}>
-          {saveBalance.toLocaleString()} RWF
-        </Text>
+      {/* --- GROW CONTENT --- */}
+      {activeTab === "grow" && (
+        <View>
+          <View style={styles.mainCard}>
+            <Text style={styles.cardLabel}>TOTAL GROWING</Text>
+            <View style={styles.amountRow}>
+              <Text style={styles.cardCurrency}>RWF</Text>
+              <Text style={styles.cardAmount}>120,000</Text>
+            </View>
+            <View style={styles.greenPill}>
+              <Text style={styles.greenPillText}>
+                ↗ +RWF 8,400 projected in 12 months
+              </Text>
+            </View>
+          </View>
 
-        <View style={styles.controlsRow}>
-          <TouchableOpacity
-            style={[styles.controlBtn, styles.bgOrange]}
-            onPress={decreaseSave}
-          >
-            <Text style={styles.controlTextWhite}>-</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlBtn, styles.bgOrange]}
-            onPress={increaseSave}
-          >
-            <Text style={styles.controlTextWhite}>+</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          <View style={styles.listCard}>
+            <View>
+              <Text style={styles.listTitle}>Investment Balance</Text>
+              <Text style={styles.listSub}>Held with a licensed partner</Text>
+            </View>
+            <View style={styles.amountRowSmall}>
+              <Text style={styles.listCurrency}>RWF</Text>
+              <Text style={styles.listAmount}>120,000</Text>
+            </View>
+          </View>
 
-      {/* 3. INVEST CONTAINER */}
-      <View style={styles.glassCard}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Invested</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{investPct}%</Text>
+          <View style={styles.listCard}>
+            <View>
+              <Text style={styles.listTitle}>Annual Rate</Text>
+              <Text style={styles.listSub}>
+                Compounding yearly on your balance
+              </Text>
+            </View>
+            <Text style={styles.listAmount}>7%</Text>
           </View>
         </View>
-
-        <Text style={styles.balanceText}>
-          {investBalance.toLocaleString()} RWF
-        </Text>
-
-        <View style={styles.controlsRow}>
-          <TouchableOpacity
-            style={[styles.controlBtn, styles.bgDark]}
-            onPress={decreaseInvest}
-          >
-            <Text style={styles.controlTextWhite}>-</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlBtn, styles.bgDark]}
-            onPress={increaseInvest}
-          >
-            <Text style={styles.controlTextWhite}>+</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      )}
     </ScrollView>
   );
 }
@@ -185,184 +273,242 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: "#FFFFFF",
   },
   scrollContent: {
-    padding: 20,
-    paddingTop: 30,
+    padding: 24,
     paddingBottom: 40,
   },
 
-  // Greeting Section
-  greetingGlass: {
-    backgroundColor: "rgba(255, 255, 255, 0.85)",
-    padding: 20,
-    borderRadius: 24,
+  // Hero Section
+  heroSection: {
     marginBottom: 24,
-    borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 0.9)",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.08,
-        shadowRadius: 16,
-      },
-      android: { elevation: 2 },
-      web: {
-        boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-        backdropFilter: "blur(16px)",
-      },
-    }),
   },
-  greetingText: {
-    fontSize: 28,
-    fontWeight: "900",
-    color: "#1A1A1C",
+  heroLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#9CA3AF",
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
     marginBottom: 4,
   },
-  subGreeting: {
-    fontSize: 15,
-    color: "#4A4A4A",
-    fontWeight: "600",
+  currency: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#9CA3AF",
+  },
+  hugeAmount: {
+    fontSize: 48,
+    fontWeight: "900",
+    color: "#111827",
+    letterSpacing: -1,
+  },
+  heroSubtext: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+    marginBottom: 16,
+  },
+  segmentedBar: {
+    flexDirection: "row",
+    height: 6,
+    gap: 4,
+  },
+  segment: {
+    borderRadius: 3,
   },
 
-  // Main Banner
-  mainBanner: {
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 16,
+  // Tabs
+  tabContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 32,
+  },
+  tabWrapper: {
+    flex: 1,
+    alignItems: "center",
+  },
+  tabBtn: {
+    width: "100%",
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activeTabRed: {
+    backgroundColor: "#DC2626",
     ...Platform.select({
       ios: {
-        shadowColor: MC_ORANGE,
+        shadowColor: "#DC2626",
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.4,
         shadowRadius: 12,
       },
       android: { elevation: 8 },
-      web: { boxShadow: "0px 8px 24px rgba(255, 95, 0, 0.4)" },
+      web: { boxShadow: "0px 8px 24px rgba(220, 38, 38, 0.4)" },
     }),
   },
-  bannerLabel: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.9)",
-    fontWeight: "600",
-    marginBottom: 8,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+  inactiveTab: {
+    backgroundColor: "#F3F4F6",
   },
-  bannerAmount: {
-    fontSize: 36,
-    fontWeight: "900",
+  tabTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    marginBottom: 2,
+  },
+  tabSub: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  activeText: {
     color: "#FFFFFF",
   },
-
-  // Master Deposit Button
-  masterButton: {
-    backgroundColor: MC_YELLOW,
-    paddingVertical: 18,
-    borderRadius: 16,
-    alignItems: "center",
-    marginBottom: 30,
-    ...Platform.select({
-      ios: {
-        shadowColor: MC_YELLOW,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: { elevation: 4 },
-      web: { boxShadow: "0px 4px 16px rgba(247, 158, 27, 0.3)" },
-    }),
+  activeTextSub: {
+    color: "rgba(255,255,255,0.8)",
   },
-  masterButtonText: {
-    color: "#1A1A1C",
-    fontSize: 18,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+  inactiveText: {
+    color: "#6B7280",
+  },
+  inactiveTextSub: {
+    color: "#9CA3AF",
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#DC2626",
+    marginTop: 8,
   },
 
-  // Glassmorphism Cards
-  glassCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.85)",
+  // Dynamic Content Cards
+  mainCard: {
+    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     padding: 24,
-    marginBottom: 20,
-    borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 0.9)",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.08,
-        shadowRadius: 16,
-      },
-      android: { elevation: 2 },
-      web: {
-        boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
-        backdropFilter: "blur(16px)",
-      },
-    }),
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+    marginBottom: 16,
   },
-  cardHeader: {
+  cardLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#9CA3AF",
+    letterSpacing: 1,
+    marginBottom: 8,
+    textTransform: "uppercase",
+  },
+  cardCurrency: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#9CA3AF",
+  },
+  cardAmount: {
+    fontSize: 40,
+    fontWeight: "900",
+    color: "#111827",
+    letterSpacing: -1,
+    marginBottom: 16,
+  },
+  progressBarBg: {
+    height: 6,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 3,
+    marginBottom: 12,
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "#DC2626",
+    borderRadius: 3,
+  },
+  cardFooterText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  greenPill: {
+    backgroundColor: "#ECFDF5",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignSelf: "flex-start",
+  },
+  greenPillText: {
+    color: "#059669",
+    fontWeight: "800",
+    fontSize: 14,
+  },
+
+  // List Cards
+  listCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#1A1A1C",
-  },
-  badge: {
-    backgroundColor: "rgba(255,255,255,0.9)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
+    borderColor: "#F3F4F6",
+    marginBottom: 12,
   },
-  badgeText: {
-    fontWeight: "900",
-    color: "#1A1A1C",
+  listContentLeft: {
+    alignItems: "flex-start",
   },
-  balanceText: {
-    fontSize: 28,
+  listTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  listSub: {
+    fontSize: 13,
+    color: "#6B7280",
+    fontWeight: "500",
+    marginBottom: 8,
+  },
+  amountRowSmall: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+  },
+  listCurrency: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#9CA3AF",
+  },
+  listAmount: {
+    fontSize: 20,
     fontWeight: "900",
-    color: "#1A1A1C",
-    marginBottom: 24,
+    color: "#111827",
   },
 
-  // Controls
-  controlsRow: {
-    flexDirection: "row",
-    gap: 12,
+  // Badges
+  badgeRed: {
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
-  controlBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bgYellow: {
-    backgroundColor: MC_YELLOW,
-  },
-  bgOrange: {
-    backgroundColor: MC_ORANGE,
-  },
-  bgDark: {
-    backgroundColor: DARK_CHARCOAL, // Black/Charcoal for the Invest buttons
-  },
-  controlTextBlack: {
-    fontSize: 24,
+  badgeRedText: {
+    color: "#DC2626",
+    fontSize: 10,
     fontWeight: "800",
-    color: "#1A1A1C",
+    letterSpacing: 1,
   },
-  controlTextWhite: {
-    fontSize: 24,
+  badgeOrange: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  badgeOrangeText: {
+    color: "#D97706",
+    fontSize: 10,
     fontWeight: "800",
-    color: "#FFFFFF",
+    letterSpacing: 1,
   },
 });
