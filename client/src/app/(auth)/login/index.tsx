@@ -1,14 +1,18 @@
-//src/app/(auth)/login/index.tsx
-import { View, Text } from "react-native";
+// src/app/(auth)/login/index.tsx
+import { View, StyleSheet } from "react-native";
 import LoginForm from "./_LoginForm";
 
-const index = () => {
+export default function LoginIndex() {
   return (
-    <View>
-      <Text>index</Text>
+    <View style={styles.container}>
       <LoginForm />
     </View>
   );
-};
+}
 
-export default index;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+});

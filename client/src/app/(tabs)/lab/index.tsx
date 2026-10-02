@@ -1,11 +1,11 @@
-// src/app/(tabs)/index.tsx
+// src/app/(tabs)/lab/index.tsx
 import { View, StyleSheet } from "react-native";
-import SpendTab from "./_SpendTab";
+import LabTab from "./_LabTab";
 
-export default function HomeIndex() {
+export default function LabIndex() {
   return (
     <View style={styles.container}>
-      <SpendTab />
+      <LabTab />
     </View>
   );
 }

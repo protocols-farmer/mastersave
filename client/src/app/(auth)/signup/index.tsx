@@ -1,15 +1,18 @@
-//src/app/(auth)/signup/index.tsx
-import { View, Text } from "react-native";
-
+// src/app/(auth)/signup/index.tsx
+import { View, StyleSheet } from "react-native";
 import Signup from "./_Signup";
 
-const index = () => {
+export default function SignupIndex() {
   return (
-    <View>
-      <Text>index</Text>
+    <View style={styles.container}>
       <Signup />
     </View>
   );
-};
+}
 
-export default index;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+});

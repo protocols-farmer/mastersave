@@ -1,12 +1,11 @@
-//src/app/(auth)/_layout.tsx
-import { View, Text } from "react-native";
+// src/app/(auth)/_layout.tsx
+import { Stack } from "expo-router";
 
-const index = () => {
+export default function AuthLayout() {
   return (
-    <View>
-      <Text>index</Text>
-    </View>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="login/index" />
+      <Stack.Screen name="signup/index" />
+    </Stack>
   );
-};
-
-export default index;
+}

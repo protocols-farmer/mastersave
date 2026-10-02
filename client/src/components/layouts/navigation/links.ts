@@ -14,7 +14,7 @@ export const bottomTabs: NavLink[] = [
   { name: "Spend", path: "/", icon: "wallet" },
   { name: "Save", path: "/save", icon: "lock-closed" },
   { name: "Grow", path: "/grow", icon: "trending-up" },
-  { name: "History", path: "/history", icon: "list" },
+  { name: "Lab", path: "/lab", icon: "flask" }, // Replaced History with Lab
 ];
 
 export const sidebarLinks: NavLink[] = [

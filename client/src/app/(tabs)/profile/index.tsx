@@ -2,15 +2,13 @@
 import { View, StyleSheet } from "react-native";
 import Profile from "./_Profile";
 
-const ProfileIndex = () => {
+export default function ProfileIndex() {
   return (
     <View style={styles.container}>
       <Profile />
     </View>
   );
-};
-
-export default ProfileIndex;
+}
 
 const styles = StyleSheet.create({
   container: {

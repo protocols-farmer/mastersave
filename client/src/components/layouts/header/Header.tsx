@@ -20,14 +20,27 @@ const Header = () => {
         <Text style={styles.headerTitle}>MasterSave</Text>
       </View>
 
-      {/* Right side: Avatar (Now Clickable) */}
-      <TouchableOpacity
-        style={styles.avatarCircle}
-        activeOpacity={0.8}
-        onPress={() => router.push("/profile")}
-      >
-        <Text style={styles.avatarText}>NT</Text>
-      </TouchableOpacity>
+      {/* Right side: Actions */}
+      <View style={styles.rightActions}>
+        {/* Deposit Button */}
+        <TouchableOpacity
+          style={styles.depositBtn}
+          activeOpacity={0.8}
+          // You can route this to a deposit modal or screen later
+          onPress={() => console.log("Deposit pressed")}
+        >
+          <Text style={styles.depoText}>Depo +</Text>
+        </TouchableOpacity>
+
+        {/* Avatar */}
+        <TouchableOpacity
+          style={styles.avatarCircle}
+          activeOpacity={0.8}
+          onPress={() => router.push("/profile")}
+        >
+          <Text style={styles.avatarText}>NT</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -61,6 +74,24 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
     color: "#111827",
+  },
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  depositBtn: {
+    height: 36,
+    paddingHorizontal: 16, // Creates a nice pill shape for the text
+    borderRadius: 18,
+    backgroundColor: "#111827",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  depoText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "800",
   },
   avatarCircle: {
     width: 36,
