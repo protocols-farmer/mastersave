@@ -8,7 +8,9 @@ import { connectRedis } from "./db/redis.js";
 import { verifyCloudinary } from "./db/cloudinary.js";
 import { startTokenCleanupWorker } from "./workers/tokenCleanup.js";
 import { startDepositReconciliationWorker } from "./workers/depositReconciliation.js";
+import net from "node:net";
 
+net.setDefaultAutoSelectFamilyAttemptTimeout(5000);
 const server = http.createServer((req, res) => {
   app(req, res).catch((err: any) => {
     process.stderr.write(

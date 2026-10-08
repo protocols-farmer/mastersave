@@ -287,7 +287,7 @@ export const app = async (
   if (pathname === "/") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ message: "Rotten Lab API is Online" }));
+    res.end(JSON.stringify({ message: "Master save api is online" }));
     return;
   }
 
