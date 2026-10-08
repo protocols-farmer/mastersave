@@ -1,0 +1,191 @@
+# ========================================================================== #
+# 🥇 THE FINAL BOSS .GITIGNORE FOR NODE.JS BACKENDS (UPGRADED)              #
+# ========================================================================== #
+
+# -------------------------------------------------------------------------- #
+# 1. DEPENDENCIES & PACKAGE MANAGERS                                         #
+# -------------------------------------------------------------------------- #
+node_modules/
+jspm_packages/
+.pnp.*
+.pnpm-store/
+
+# Yarn (Zero-Installs and modern Yarn)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Bun & Deno runtime dependencies
+.bun/
+.deno/
+
+# NOTE: Never ignore your lock files!
+# (package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lockb SHOULD be tracked)
+
+# -------------------------------------------------------------------------- #
+# 2. ENVIRONMENT & SENSITIVE DATA (CRITICAL)                                 #
+# -------------------------------------------------------------------------- #
+# Catch-all for any environment file variations
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Security credentials and certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+secrets.json
+credentials.json
+service-account.json
+
+# -------------------------------------------------------------------------- #
+# 3. BUILD ARTIFACTS & COMPILERS                                            #
+# -------------------------------------------------------------------------- #
+dist/
+build/
+out/
+lib/
+.output/
+*.tsbuildinfo
+.swc/
+.next/
+.nuxt/
+.remix/
+.cache/
+
+# -------------------------------------------------------------------------- #
+# 4. LOGS & DIAGNOSTICS                                                     #
+# -------------------------------------------------------------------------- #
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+lerna-debug.log*
+
+# Node Heap Snapshots, CPU profiles, and core dumps
+*.heapdump
+*.cpuprofile
+*.prof
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+core
+core.*
+
+# -------------------------------------------------------------------------- #
+# 5. CODE EDITORS, IDEs, & TOOLS                                             #
+# -------------------------------------------------------------------------- #
+# VS Code / Cursor
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# Zed
+.zed/
+
+# IntelliJ / WebStorm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Vim / Emacs
+*~
+*.swp
+*.swo
+*.tmp
+
+# Local configurations for toolchains
+.eslintcache
+.stylelintcache
+.prettiercache
+.parcel-cache
+
+# -------------------------------------------------------------------------- #
+# 6. OPERATING SYSTEM                                                        #
+# -------------------------------------------------------------------------- #
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.Trash-*
+
+# -------------------------------------------------------------------------- #
+# 7. DATABASES, ORMs, & CONTAINERS                                           #
+# -------------------------------------------------------------------------- #
+# Prisma
+prisma/schema.prisma.bak
+/src/generated/prisma
+
+# SQLite databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Docker & Local Data Persistence
+.docker/
+docker/data/
+pgdata/
+redisdata/
+
+# -------------------------------------------------------------------------- #
+# 8. TESTING & LINTING                                                       #
+# -------------------------------------------------------------------------- #
+coverage/
+.nyc_output/
+lcov.info
+
+# Playwright & Cypress test artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.local-browsers/
+cypress/videos/
+cypress/screenshots/
+
+# -------------------------------------------------------------------------- #
+# 9. PROJECT SPECIFIC / RUNTIME ARTIFACTS                                    #
+# -------------------------------------------------------------------------- #
+# Local media uploads or volatile temp files
+uploads/
+downloads/
+temp/
+tmp/
+
+# Serverless & Cloud Deployments
+.serverless/
+.vercel/
+.netlify/
+.sst/
+.amplify/

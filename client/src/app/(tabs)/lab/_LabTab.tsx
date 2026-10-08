@@ -1,19 +1,37 @@
 // src/app/(tabs)/lab/_LabTab.tsx
-import React, { useState } from "react";
+import {
+  useFinanceDashboardQuery,
+  useUpdateRulesMutation,
+} from "@/lib/features/finance/financeQueries";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Platform,
+  ActivityIndicator,
 } from "react-native";
 
 export default function LabTab() {
-  // Starting with the default 1.2M split: Spend (50%), Save (40%), Grow (10%)
+  const { data: dashboard, isLoading: isFetching } = useFinanceDashboardQuery();
+  const updateRulesMutation = useUpdateRulesMutation();
+
+  // Local state for the sliders
   const [spend, setSpend] = useState(50);
   const [save, setSave] = useState(40);
   const [grow, setGrow] = useState(10);
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Sync state when DB data arrives
+  useEffect(() => {
+    if (dashboard) {
+      setSpend(dashboard.spend_percentage);
+      setSave(dashboard.save_percentage);
+      setGrow(dashboard.grow_percentage);
+    }
+  }, [dashboard]);
 
   // Logic to keep total exactly at 100%
   const increaseSave = () => {
@@ -42,6 +60,34 @@ export default function LabTab() {
     }
   };
 
+  const handleApplyRules = () => {
+    setUpdateMessage("");
+    setErrorMessage("");
+
+    updateRulesMutation.mutate(
+      { spendPercentage: spend, savePercentage: save, growPercentage: grow },
+      {
+        onSuccess: () => {
+          setUpdateMessage("Rules successfully locked in.");
+          setTimeout(() => setUpdateMessage(""), 3000);
+        },
+        onError: (err: any) => {
+          setErrorMessage(
+            err.response?.data?.error || "Failed to update rules.",
+          );
+        },
+      },
+    );
+  };
+
+  if (isFetching && !dashboard) {
+    return (
+      <View style={[styles.container, styles.centerAll]}>
+        <ActivityIndicator size="large" color="#DC2626" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       style={styles.container}
@@ -66,14 +112,20 @@ export default function LabTab() {
           <View
             style={[
               styles.segment,
-              { flex: spend, backgroundColor: "#DC2626" },
+              { flex: spend || 1, backgroundColor: "#DC2626" },
             ]}
           />
           <View
-            style={[styles.segment, { flex: save, backgroundColor: "#F59E0B" }]}
+            style={[
+              styles.segment,
+              { flex: save || 1, backgroundColor: "#F59E0B" },
+            ]}
           />
           <View
-            style={[styles.segment, { flex: grow, backgroundColor: "#111827" }]}
+            style={[
+              styles.segment,
+              { flex: grow || 1, backgroundColor: "#111827" },
+            ]}
           />
         </View>
 
@@ -141,9 +193,26 @@ export default function LabTab() {
         </View>
       </View>
 
+      {/* Status Messages */}
+      {updateMessage ? (
+        <Text style={styles.successText}>{updateMessage}</Text>
+      ) : null}
+      {errorMessage ? (
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      ) : null}
+
       {/* SAVE BUTTON */}
-      <TouchableOpacity style={styles.saveButton} activeOpacity={0.9}>
-        <Text style={styles.saveButtonText}>Apply Default Rule</Text>
+      <TouchableOpacity
+        style={styles.saveButton}
+        activeOpacity={0.9}
+        onPress={handleApplyRules}
+        disabled={updateRulesMutation.isPending}
+      >
+        {updateRulesMutation.isPending ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={styles.saveButtonText}>Apply Default Rule</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -151,6 +220,7 @@ export default function LabTab() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
+  centerAll: { justifyContent: "center", alignItems: "center" },
   scrollContent: { padding: 24, paddingBottom: 40 },
 
   headerSection: { marginBottom: 24 },
@@ -242,6 +312,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
     color: "#111827",
+  },
+
+  successText: {
+    color: "#059669",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 8,
   },
 
   saveButton: {

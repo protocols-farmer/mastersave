@@ -9,14 +9,87 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+// import { Ionicons } from "@expo/vector-icons";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { loginSchema } from "../../../lib/features/auth/authSchema";
+import {
+  useLoginMutation,
+  useGoogleLoginMutation,
+} from "../../../lib/features/auth/authQueries";
 import { Ionicons } from "@expo/vector-icons";
+import { getErrorMessage } from "../../../lib/api/getErrorMessage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  const insets = useSafeAreaInsets();
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  // 1. Setup React Hook Form with Zod schema
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      identifier: "",
+      password: "",
+    },
+  });
+
+  const loginMutation = useLoginMutation();
+  const googleMutation = useGoogleLoginMutation();
+
+  // 3. Submit Handler
+  const onSubmit = (data: LoginFormValues) => {
+    setServerError(null); // Clear previous server errors
+
+    loginMutation.mutate(data, {
+      onError: (error: any) => {
+        // Developers: full detail stays in the console
+        console.error(
+          "[LOGIN UI ERROR]:",
+          error.message,
+          error.response?.status,
+          error.response?.data,
+        );
+        // Users: one clean, friendly sentence
+        setServerError(
+          getErrorMessage(error, "We couldn't log you in. Please try again."),
+        );
+      },
+    });
+  };
+  const onGooglePress = () => {
+    setServerError(null);
+
+    googleMutation.mutate(undefined, {
+      onError: (error: any) => {
+        // Developers: full detail stays in the console
+        console.error(
+          "[GOOGLE LOGIN UI ERROR]:",
+          error.message,
+          error.response?.status,
+          error.response?.data,
+        );
+        // Users: one clean sentence
+        setServerError(
+          getErrorMessage(
+            error,
+            "We couldn't sign you in with Google. Please try again.",
+          ),
+        );
+      },
+    });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -24,8 +97,12 @@ export default function LoginForm() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 40 },
+        ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.headerSection}>
           <View style={styles.logoRow}>
@@ -39,49 +116,98 @@ export default function LoginForm() {
         </View>
 
         <View style={styles.formSection}>
+          {/* SERVER ERROR ALERT BOX */}
+          {serverError && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorBoxText}>{serverError}</Text>
+            </View>
+          )}
+
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>EMAIL ADDRESS</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="name@example.com"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
+            <Text style={styles.label}>EMAIL, USERNAME, OR PHONE</Text>
+            <Controller
+              control={control}
+              name="identifier"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.identifier && styles.inputError]}
+                  placeholder="Email, username, or phone"
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="username"
+                  textContentType="username"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
+            {/* ZOD VALIDATION ERROR */}
+            {errors.identifier && (
+              <Text style={styles.errorText}>{errors.identifier.message}</Text>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>PASSWORD</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.password && styles.inputError]}
+                  placeholder="••••••••"
+                  placeholderTextColor="#9CA3AF"
+                  secureTextEntry
+                  autoComplete="password"
+                  textContentType="password"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
+            {/* ZOD VALIDATION ERROR */}
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password.message}</Text>
+            )}
           </View>
 
-          <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.6}>
-            <Text style={styles.forgotText}>Forgot password?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.8}>
-            <Text style={styles.primaryBtnText}>Sign In</Text>
+          {/* "Forgot password?" comes back when password reset is built */}
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            activeOpacity={0.8}
+            onPress={handleSubmit(onSubmit)}
+            disabled={loginMutation.isPending || googleMutation.isPending}
+          >
+            {loginMutation.isPending ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.primaryBtnText}>Sign In</Text>
+            )}
           </TouchableOpacity>
         </View>
-
         <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>OR</Text>
           <View style={styles.dividerLine} />
         </View>
 
-        <TouchableOpacity style={styles.googleBtn} activeOpacity={0.8}>
-          <Ionicons name="logo-google" size={20} color="#111827" />
-          <Text style={styles.googleBtnText}>Continue with Google</Text>
+        <TouchableOpacity
+          style={styles.googleBtn}
+          activeOpacity={0.8}
+          onPress={onGooglePress}
+          disabled={googleMutation.isPending || loginMutation.isPending}
+        >
+          {googleMutation.isPending ? (
+            <ActivityIndicator color="#111827" />
+          ) : (
+            <>
+              <Ionicons name="logo-google" size={20} color="#111827" />
+              <Text style={styles.googleBtnText}>Continue with Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         <View style={styles.footerRow}>
@@ -147,6 +273,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#111827",
+  },
+  inputError: {
+    borderColor: "#DC2626",
+    borderWidth: 1,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  errorBox: {
+    backgroundColor: "#FEF2F2",
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    marginBottom: 20,
+  },
+  errorBoxText: {
+    color: "#991B1B",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 
   forgotBtn: { alignSelf: "flex-end", marginBottom: 24 },

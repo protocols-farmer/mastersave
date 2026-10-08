@@ -9,15 +9,89 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+// import { Ionicons } from "@expo/vector-icons";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { signupSchema } from "../../../lib/features/auth/authSchema";
+import {
+  useSignupMutation,
+  useGoogleLoginMutation,
+} from "../../../lib/features/auth/authQueries";
 import { Ionicons } from "@expo/vector-icons";
+import { getErrorMessage } from "../../../lib/api/getErrorMessage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function Signup() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const insets = useSafeAreaInsets();
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  // 1. Setup React Hook Form with Zod schema
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const signupMutation = useSignupMutation();
+  const googleMutation = useGoogleLoginMutation();
+
+  // 3. Submit Handler
+  const onSubmit = (data: SignupFormValues) => {
+    setServerError(null); // Clear previous server errors
+
+    signupMutation.mutate(data, {
+      onError: (error: any) => {
+        // Developers: full detail stays in the console
+        console.error(
+          "[SIGNUP UI ERROR]:",
+          error.message,
+          error.response?.status,
+          error.response?.data,
+        );
+        // Users: one clean sentence
+        setServerError(
+          getErrorMessage(
+            error,
+            "We couldn't create your account. Please try again.",
+          ),
+        );
+      },
+    });
+  };
+
+  const onGooglePress = () => {
+    setServerError(null);
+
+    googleMutation.mutate(undefined, {
+      onError: (error: any) => {
+        console.error(
+          "[GOOGLE SIGNUP UI ERROR]:",
+          error.message,
+          error.response?.status,
+          error.response?.data,
+        );
+        setServerError(
+          getErrorMessage(
+            error,
+            "We couldn't sign you up with Google. Please try again.",
+          ),
+        );
+      },
+    });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -25,8 +99,12 @@ export default function Signup() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 40 },
+        ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.headerSection}>
           <View style={styles.logoRow}>
@@ -38,44 +116,106 @@ export default function Signup() {
         </View>
 
         <View style={styles.formSection}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>FULL NAME</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="John Doe"
-              placeholderTextColor="#9CA3AF"
-              value={name}
-              onChangeText={setName}
-            />
-          </View>
+          {/* SERVER ERROR ALERT BOX */}
+          {serverError && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorBoxText}>{serverError}</Text>
+            </View>
+          )}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>EMAIL ADDRESS</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="name@example.com"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.email && styles.inputError]}
+                  placeholder="name@example.com"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
+            {/* ZOD VALIDATION ERROR */}
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email.message}</Text>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>PASSWORD</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Create a strong password"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.password && styles.inputError]}
+                  placeholder="Create a strong password"
+                  placeholderTextColor="#9CA3AF"
+                  secureTextEntry
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
+            {/* ZOD VALIDATION ERROR */}
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password.message}</Text>
+            )}
           </View>
 
-          <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.8}>
-            <Text style={styles.primaryBtnText}>Sign Up</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>CONFIRM PASSWORD</Text>
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[
+                    styles.input,
+                    errors.confirmPassword && styles.inputError,
+                  ]}
+                  placeholder="Confirm your password"
+                  placeholderTextColor="#9CA3AF"
+                  secureTextEntry
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {/* ZOD VALIDATION ERROR */}
+            {errors.confirmPassword && (
+              <Text style={styles.errorText}>
+                {errors.confirmPassword.message}
+              </Text>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            activeOpacity={0.8}
+            onPress={handleSubmit(onSubmit)}
+            disabled={signupMutation.isPending || googleMutation.isPending}
+          >
+            {signupMutation.isPending ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.primaryBtnText}>Sign Up</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -85,9 +225,20 @@ export default function Signup() {
           <View style={styles.dividerLine} />
         </View>
 
-        <TouchableOpacity style={styles.googleBtn} activeOpacity={0.8}>
-          <Ionicons name="logo-google" size={20} color="#111827" />
-          <Text style={styles.googleBtnText}>Sign up with Google</Text>
+        <TouchableOpacity
+          style={styles.googleBtn}
+          activeOpacity={0.8}
+          onPress={onGooglePress}
+          disabled={googleMutation.isPending || signupMutation.isPending}
+        >
+          {googleMutation.isPending ? (
+            <ActivityIndicator color="#111827" />
+          ) : (
+            <>
+              <Ionicons name="logo-google" size={20} color="#111827" />
+              <Text style={styles.googleBtnText}>Sign up with Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         <View style={styles.footerRow}>
@@ -153,6 +304,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#111827",
+  },
+  inputError: {
+    borderColor: "#DC2626",
+    borderWidth: 1,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  errorBox: {
+    backgroundColor: "#FEF2F2",
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    marginBottom: 20,
+  },
+  errorBoxText: {
+    color: "#991B1B",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 
   primaryBtn: {

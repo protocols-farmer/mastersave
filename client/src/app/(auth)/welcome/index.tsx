@@ -1,14 +1,18 @@
-//src/app/(auth)/welcome/index.tsx
-import { View, Text } from "react-native";
+// src/app/(auth)/welcome/index.tsx
+import { View, StyleSheet } from "react-native";
 import Welcome from "./_Welcome";
 
-const index = () => {
+export default function WelcomeIndex() {
   return (
-    <View>
-      <Text>index</Text>
+    <View style={styles.container}>
       <Welcome />
     </View>
   );
-};
+}
 
-export default index;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+});
